@@ -64,4 +64,14 @@ public class Dinosaur implements GameConstants {
             isJumping = false;
         }
     }
+    
+public Rectangle getBounds() {
+    return new Rectangle(
+        GW - 1100,
+        y,
+        89,
+        96
+    );
+}
+
 }

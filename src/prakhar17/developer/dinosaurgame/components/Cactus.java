@@ -8,12 +8,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
 
-public class Cactus implements GameConstants {
+public class Cactus implements GameConstants, Obstacle {
     private final BufferedImage spriteImage;
     private final BufferedImage[] cactus;
     private int randomObsNo = (int) (Math.random() * 10);
     private int x;
 
+    @Override
     public int getX() {
         return x;
     }
@@ -55,10 +56,34 @@ public class Cactus implements GameConstants {
     }
 
     public void moveObstacleCactusBySpeed(int speed) {
-        x = x - speed;
-        if (x == 0) {
-            x = GW;
-            randomObsNo = (int) (Math.random() * 10);
-        }
-    }
+    x = x - speed;
+}
+    @Override
+public void draw(Graphics pen) {
+    printRandomObstacleCactus(pen);
+}
+
+@Override
+public void move(int speed) {
+    moveObstacleCactusBySpeed(speed);
+}
+
+@Override
+public Rectangle getBounds() {
+    int obsNo = switch (randomObsNo) {
+        case 0, 1 -> 1;
+        case 2, 3 -> 2;
+        case 4, 5 -> 3;
+        case 6, 7 -> 4;
+        case 8 -> 5;
+        default -> 6;
+    };
+
+    BufferedImage image = cactus[obsNo - 1];
+    int y = (obsNo <= 3) ? GROUND + 22
+          : (obsNo <= 5) ? GROUND - 2
+          : GROUND - 4;
+
+    return new Rectangle(x, y, image.getWidth(), image.getHeight());
+}
 }
