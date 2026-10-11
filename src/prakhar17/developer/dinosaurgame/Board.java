@@ -17,9 +17,13 @@ public class Board extends JPanel implements GameConstants {
     private final Top top;
     private final Dinosaur dino;
     private final Cloud cloud;
-    private final Cactus obstacle;
     private final GameOver gameOver;
     private final int speed;
+    private Obstacle obstacle;
+    private ObstacleCreator obstacleCreator;
+    private boolean nextIsBird = true;
+    //true -> next obstacle is bird
+    //false ->next obstacle is cactus     
 
 
     protected Board() throws IOException {
@@ -30,8 +34,9 @@ public class Board extends JPanel implements GameConstants {
         dino = new Dinosaur();
         ground = new Ground();
         cloud = new Cloud();
-        obstacle = new Cactus();
         gameOver = new GameOver();
+        obstacleCreator = new CactusCreator();
+        obstacle = obstacleCreator.createObstacle();
 
         setFocusable(true);
         bindEvents();
@@ -42,10 +47,19 @@ public class Board extends JPanel implements GameConstants {
         super.paintComponent(pen);
         printBackground(pen);
         cloud.printCloud(pen);
-        dino.printRun(pen);
         ground.moveGroundBySpeed(speed);
-        obstacle.printRandomObstacleCactus(pen);
-        obstacle.moveObstacleCactusBySpeed(speed);
+        //obstacle.printRandomObstacleCactus(pen);
+        //obstacle.moveObstacleCactusBySpeed(speed);
+        obstacle.draw(pen);
+        obstacle.move(speed);
+        
+if (obstacle.getBounds().x + obstacle.getBounds().width < 0) {
+    try {
+        createNextObstacle();
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+}
 
         try {
             top.printTop(pen);
@@ -59,12 +73,18 @@ public class Board extends JPanel implements GameConstants {
         }
 
         dino.fall();
-        if (obstacle.getX() < GW - 1050 && !dino.isJumping()) {
-            System.out.println("Game Over");
-            gameOver.printGameOver(pen);
-            dino.printDead(pen);
-            timer.stop();
-        }
+        
+       
+if (dino.getBounds().intersects(obstacle.getBounds())) {
+    System.out.println("Game Over");
+    gameOver.printGameOver(pen);
+    dino.printDead(pen);
+    timer.stop();
+} else {
+    dino.printRun(pen);
+}
+
+        
     }
 
     private void printBackground(Graphics pen) {
@@ -92,4 +112,18 @@ public class Board extends JPanel implements GameConstants {
             }
         });
     }
+    
+private void createNextObstacle() throws IOException {
+
+    if (nextIsBird) {
+        obstacleCreator = new BirdCreator();
+    } else {
+        obstacleCreator = new CactusCreator();
+    }
+
+    obstacle = obstacleCreator.createObstacle();
+
+    nextIsBird = !nextIsBird;
+}
+
 }
