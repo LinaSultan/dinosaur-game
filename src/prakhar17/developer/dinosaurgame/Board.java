@@ -1,3 +1,4 @@
+
 package prakhar17.developer.dinosaurgame;
 
 import prakhar17.developer.dinosaurgame.components.*;
@@ -12,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 public class Board extends JPanel implements GameConstants {
+
     private Timer timer;
     private final Ground ground;
     private final Top top;
@@ -22,16 +24,12 @@ public class Board extends JPanel implements GameConstants {
     private Obstacle obstacle;
     private ObstacleCreator obstacleCreator;
     private boolean nextIsBird = true;
-    //true -> next obstacle is bird
-    //false ->next obstacle is cactus     
 
-
-    protected Board() throws IOException {
-        gameLoop();
+    protected Board(Dinosaur dino) throws IOException {
         speed = 50;
 
         top = new Top();
-        dino = new Dinosaur();
+        this.dino = dino;
         ground = new Ground();
         cloud = new Cloud();
         gameOver = new GameOver();
@@ -40,51 +38,45 @@ public class Board extends JPanel implements GameConstants {
 
         setFocusable(true);
         bindEvents();
+        gameLoop();
     }
 
     @Override
     protected void paintComponent(Graphics pen) {
         super.paintComponent(pen);
+
         printBackground(pen);
         cloud.printCloud(pen);
         ground.moveGroundBySpeed(speed);
-        //obstacle.printRandomObstacleCactus(pen);
-        //obstacle.moveObstacleCactusBySpeed(speed);
+
         obstacle.draw(pen);
         obstacle.move(speed);
-        
-if (obstacle.getBounds().x + obstacle.getBounds().width < 0) {
-    try {
-        createNextObstacle();
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
-}
+
+        if (obstacle.getBounds().x + obstacle.getBounds().width < 0) {
+            try {
+                createNextObstacle();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         try {
             top.printTop(pen);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        try {
             ground.printGround(pen);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         dino.fall();
-        
-       
-if (dino.getBounds().intersects(obstacle.getBounds())) {
-    System.out.println("Game Over");
-    gameOver.printGameOver(pen);
-    dino.printDead(pen);
-    timer.stop();
-} else {
-    dino.printRun(pen);
-}
 
-        
+        if (dino.getBounds().intersects(obstacle.getBounds())) {
+            System.out.println("Game Over");
+            gameOver.printGameOver(pen);
+            dino.printDead(pen);
+            timer.stop();
+        } else {
+            dino.printRun(pen);
+        }
     }
 
     private void printBackground(Graphics pen) {
@@ -103,7 +95,7 @@ if (dino.getBounds().intersects(obstacle.getBounds())) {
     }
 
     private void bindEvents() {
-        this.addKeyListener(new KeyAdapter() {
+        addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
@@ -112,18 +104,15 @@ if (dino.getBounds().intersects(obstacle.getBounds())) {
             }
         });
     }
-    
-private void createNextObstacle() throws IOException {
 
-    if (nextIsBird) {
-        obstacleCreator = new BirdCreator();
-    } else {
-        obstacleCreator = new CactusCreator();
+    private void createNextObstacle() throws IOException {
+        if (nextIsBird) {
+            obstacleCreator = new BirdCreator();
+        } else {
+            obstacleCreator = new CactusCreator();
+        }
+
+        obstacle = obstacleCreator.createObstacle();
+        nextIsBird = !nextIsBird;
     }
-
-    obstacle = obstacleCreator.createObstacle();
-
-    nextIsBird = !nextIsBird;
-}
-
 }
