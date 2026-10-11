@@ -24,6 +24,8 @@ public class Board extends JPanel implements GameConstants {
     private Obstacle obstacle;
     private ObstacleCreator obstacleCreator;
     private boolean nextIsBird = true;
+private boolean isGameOver = false;
+private JButton restartButton;
 
     protected Board(Dinosaur dino) throws IOException {
         speed = 50;
@@ -39,45 +41,47 @@ public class Board extends JPanel implements GameConstants {
         setFocusable(true);
         bindEvents();
         gameLoop();
+        createRestartButton();
     }
 
     @Override
-    protected void paintComponent(Graphics pen) {
-        super.paintComponent(pen);
+protected void paintComponent(Graphics pen) {
+    super.paintComponent(pen);
 
-        printBackground(pen);
-        cloud.printCloud(pen);
-        ground.moveGroundBySpeed(speed);
+    printBackground(pen);
+    cloud.printCloud(pen);
+    ground.moveGroundBySpeed(speed);
 
-        obstacle.draw(pen);
-        obstacle.move(speed);
+    obstacle.draw(pen);
+    obstacle.move(speed);
 
-        if (obstacle.getBounds().x + obstacle.getBounds().width < 0) {
-            try {
-                createNextObstacle();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
+    if (obstacle.getBounds().x + obstacle.getBounds().width < 0) {
         try {
-            top.printTop(pen);
-            ground.printGround(pen);
-        } catch (Exception e) {
+            createNextObstacle();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        dino.fall();
-
-        if (dino.getBounds().intersects(obstacle.getBounds())) {
-            System.out.println("Game Over");
-            gameOver.printGameOver(pen);
-            dino.printDead(pen);
-            timer.stop();
-        } else {
-            dino.printRun(pen);
-        }
     }
+
+    try {
+        top.printTop(pen);
+        ground.printGround(pen);
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+
+    dino.fall();
+
+    if (dino.getBounds().intersects(obstacle.getBounds())) {
+        gameOver.printGameOver(pen);
+        dino.printDead(pen);
+        isGameOver = true;
+        restartButton.setVisible(true);
+        timer.stop();
+    } else {
+        dino.printRun(pen);
+    }
+}
 
     private void printBackground(Graphics pen) {
         pen.setColor(new Color(GB_RED, GB_GREEN, GB_BLUE));
@@ -94,16 +98,19 @@ public class Board extends JPanel implements GameConstants {
         timer.start();
     }
 
-    private void bindEvents() {
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    dino.jump();
-                }
+   private void bindEvents() {
+    addKeyListener(new KeyAdapter() {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_SPACE && !isGameOver) {
+                dino.jump();
             }
-        });
-    }
+            if (e.getKeyCode() == KeyEvent.VK_R && isGameOver) {
+                restartGame();
+            }
+        }
+    });
+}
 
     private void createNextObstacle() throws IOException {
         if (nextIsBird) {
@@ -115,4 +122,55 @@ public class Board extends JPanel implements GameConstants {
         obstacle = obstacleCreator.createObstacle();
         nextIsBird = !nextIsBird;
     }
+
+    private void restartGame() {
+    try {
+        obstacleCreator = new CactusCreator();
+        obstacle = obstacleCreator.createObstacle();
+        nextIsBird = true;
+        dino.reset();
+        ground.reset();
+        isGameOver = false;
+        restartButton.setVisible(false);
+        requestFocusInWindow();
+        timer.start();
+        repaint();
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+}
+
+private void createRestartButton() {
+    setLayout(null);
+
+    Color normal = new Color(83, 83, 83);
+    Color hover = new Color(110, 110, 110);
+
+    restartButton = new JButton("RESTART");
+    restartButton.setBounds((GW - 160) / 2, 350, 160, 45);
+    restartButton.setFont(new Font("Arial", Font.BOLD, 18));
+    restartButton.setForeground(Color.WHITE);
+    restartButton.setBackground(normal);
+    restartButton.setOpaque(true);
+    restartButton.setBorderPainted(false);
+    restartButton.setFocusPainted(false);
+    restartButton.setFocusable(false);
+    restartButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    restartButton.setVisible(false);
+
+    restartButton.addMouseListener(new java.awt.event.MouseAdapter() {
+        @Override
+        public void mouseEntered(java.awt.event.MouseEvent e) {
+            restartButton.setBackground(hover);
+        }
+
+        @Override
+        public void mouseExited(java.awt.event.MouseEvent e) {
+            restartButton.setBackground(normal);
+        }
+    });
+
+    restartButton.addActionListener(e -> restartGame());
+    add(restartButton);
+}
 }

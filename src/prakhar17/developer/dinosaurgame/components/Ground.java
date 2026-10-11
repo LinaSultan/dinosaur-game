@@ -27,4 +27,7 @@ public class Ground implements GameConstants {
         BufferedImage groundSubImage = groundImage.getSubimage(x, 0, GW, 24);
         pen.drawImage(groundSubImage, 0, GH - 100, GW, 50, null);
     }
+    public void reset() {
+    x = 0;
+}
 }

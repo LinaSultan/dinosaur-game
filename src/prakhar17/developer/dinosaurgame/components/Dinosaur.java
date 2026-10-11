@@ -97,6 +97,14 @@ public class Dinosaur implements GameConstants, Prototype {
 
         drawBow(pen, x, y);
     }
+public void drawPreview(Graphics pen, int x, int y, int scale) {
+    Graphics2D g = (Graphics2D) pen.create();
+    g.translate(x, y);
+    g.scale(scale, scale);
+    g.drawImage(dinosaurRunImages[0], 0, 0, null);
+    drawBow(g, 0, 0);
+    g.dispose();
+}
 
     private void drawBow(Graphics pen, int x, int y) {
         if (!girl) {
@@ -136,4 +144,10 @@ public class Dinosaur implements GameConstants, Prototype {
     public Rectangle getBounds() {
         return new Rectangle(GW - 1100, y, 89, 96);
     }
+    public void reset() {
+    y = GROUND;
+    isJumping = false;
+    index = 0;
+}
+
 }
