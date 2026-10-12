@@ -41,6 +41,18 @@ public class Dinosaur implements GameConstants, Prototype {
         girl = false;
     }
 
+    // Copy constructor used by the Prototype pattern
+    private Dinosaur(Dinosaur source) {
+        spriteImage = source.spriteImage;
+        dinosaurRunImages = source.dinosaurRunImages.clone();
+        dinosaurDeadImage = source.dinosaurDeadImage;
+
+        index = source.index;
+        y = source.y;
+        isJumping = source.isJumping;
+        girl = source.girl;
+    }
+
     private void loadRunImages() {
         dinosaurRunImages[0] = spriteImage.getSubimage(1338, 1, 89, 96);
         dinosaurRunImages[1] = spriteImage.getSubimage(1425, 1, 89, 96);
@@ -50,16 +62,7 @@ public class Dinosaur implements GameConstants, Prototype {
 
     @Override
     public Dinosaur clone() {
-        try {
-            Dinosaur copy = new Dinosaur();
-            copy.girl = this.girl;
-            copy.index = 0;
-            copy.y = GROUND;
-            copy.isJumping = false;
-            return copy;
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not clone Dinosaur", e);
-        }
+        return new Dinosaur(this);
     }
 
     public Dinosaur asGirl() {
@@ -97,14 +100,15 @@ public class Dinosaur implements GameConstants, Prototype {
 
         drawBow(pen, x, y);
     }
-public void drawPreview(Graphics pen, int x, int y, int scale) {
-    Graphics2D g = (Graphics2D) pen.create();
-    g.translate(x, y);
-    g.scale(scale, scale);
-    g.drawImage(dinosaurRunImages[0], 0, 0, null);
-    drawBow(g, 0, 0);
-    g.dispose();
-}
+
+    public void drawPreview(Graphics pen, int x, int y, int scale) {
+        Graphics2D g = (Graphics2D) pen.create();
+        g.translate(x, y);
+        g.scale(scale, scale);
+        g.drawImage(dinosaurRunImages[0], 0, 0, null);
+        drawBow(g, 0, 0);
+        g.dispose();
+    }
 
     private void drawBow(Graphics pen, int x, int y) {
         if (!girl) {
@@ -144,10 +148,10 @@ public void drawPreview(Graphics pen, int x, int y, int scale) {
     public Rectangle getBounds() {
         return new Rectangle(GW - 1100, y, 89, 96);
     }
-    public void reset() {
-    y = GROUND;
-    isJumping = false;
-    index = 0;
-}
 
+    public void reset() {
+        y = GROUND;
+        isJumping = false;
+        index = 0;
+    }
 }

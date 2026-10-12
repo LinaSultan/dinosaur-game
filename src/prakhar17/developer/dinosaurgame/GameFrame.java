@@ -1,16 +1,16 @@
 
 package prakhar17.developer.dinosaurgame;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.*;
-import java.io.IOException;
-import javax.swing.*;
-import prakhar17.developer.dinosaurgame.components.Dinosaur;
-import prakhar17.developer.dinosaurgame.utils.GameConstants;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import prakhar17.developer.dinosaurgame.components.Dinosaur;
+import prakhar17.developer.dinosaurgame.utils.GameConstants;
 
 public class GameFrame extends JFrame implements GameConstants {
 
@@ -60,15 +60,15 @@ private static class MenuPanel extends JPanel {
         int h = getHeight();
         int groundY = h - 70;
 
-        // سحاب في الزوايا العلوية
+     
         g.drawImage(cloud, 40, 40, 192, 62, null);
         g.drawImage(cloud, w - 232, 90, 192, 62, null);
 
-        // الأرضية
+      
         int srcW = Math.min(ground.getWidth(), w);
         g.drawImage(ground, 0, groundY, w, groundY + 48, 0, 0, srcW, 24, null);
 
-        // صبّار في الزوايا السفلية
+        
         g.drawImage(cactusBig, 60, groundY + 10 - 98, null);
         g.drawImage(cactusSmall, 125, groundY + 10 - 72, null);
         g.drawImage(cactusSmall, w - 160, groundY + 10 - 72, null);
