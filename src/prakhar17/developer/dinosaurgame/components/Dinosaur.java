@@ -8,7 +8,7 @@ import java.util.Objects;
 import javax.imageio.ImageIO;
 import prakhar17.developer.dinosaurgame.utils.GameConstants;
 
-public class Dinosaur implements GameConstants, Prototype {
+public class Dinosaur implements GameConstants, Prototype, Player {
 
     private final BufferedImage spriteImage;
     private final BufferedImage[] dinosaurRunImages;
@@ -153,5 +153,20 @@ public class Dinosaur implements GameConstants, Prototype {
         y = GROUND;
         isJumping = false;
         index = 0;
+    }
+
+    // Added for the Decorator pattern (Stage 2): jump with a chosen force
+    public void jump(int jumpForce) {
+        if (isJumping) {
+            return;
+        }
+
+        y = y - jumpForce;
+        isJumping = true;
+    }
+
+    // Added for the Decorator pattern (Stage 2): a plain dinosaur dies when it hits an obstacle
+    public boolean isInvincible() {
+        return false;
     }
 }

@@ -2,6 +2,7 @@
 package prakhar17.developer.dinosaurgame;
 
 import prakhar17.developer.dinosaurgame.components.*;
+import prakhar17.developer.dinosaurgame.powerup.PowerUpFacade;
 import prakhar17.developer.dinosaurgame.utils.GameConstants;
 
 import javax.swing.*;
@@ -18,6 +19,8 @@ public class Board extends JPanel implements GameConstants {
     private final Ground ground;
     private final Top top;
     private final Dinosaur dino;
+    private Player player;                  // the dinosaur, possibly wrapped by a decorator
+    private final PowerUpFacade powerUps;   // Facade: food, score and power-ups
     private final Cloud cloud;
     private final GameOver gameOver;
     private final int speed;
@@ -32,6 +35,8 @@ private JButton restartButton;
 
         top = new Top();
         this.dino = dino;
+        this.player = dino;
+        powerUps = new PowerUpFacade();
         ground = new Ground();
         cloud = new Cloud();
         gameOver = new GameOver();
@@ -56,6 +61,7 @@ protected void paintComponent(Graphics pen) {
     obstacle.move(speed);
 
     if (obstacle.getBounds().x + obstacle.getBounds().width < 0) {
+        powerUps.onObstaclePassed();
         try {
             createNextObstacle();
         } catch (IOException e) {
@@ -70,16 +76,27 @@ protected void paintComponent(Graphics pen) {
         throw new RuntimeException(e);
     }
 
-    dino.fall();
+    if (!player.isInvincible()) {
+        player = dino;                              // shield time is over: back to the plain dinosaur
+    }
+    powerUps.update(speed);
+    powerUps.collect(player.getBounds());
 
-    if (dino.getBounds().intersects(obstacle.getBounds())) {
+    if (!player.isInvincible() && powerUps.shouldGrantShield()) {
+        player = new ShieldDecorator(player);       // Decorator: wrap the dinosaur with a shield
+    }
+
+    powerUps.draw(pen);
+    player.fall();
+
+    if (player.getBounds().intersects(obstacle.getBounds()) && !player.isInvincible()) {
         gameOver.printGameOver(pen);
-        dino.printDead(pen);
+        player.printDead(pen);
         isGameOver = true;
         restartButton.setVisible(true);
         timer.stop();
     } else {
-        dino.printRun(pen);
+        player.printRun(pen);
     }
 }
 
@@ -103,7 +120,7 @@ protected void paintComponent(Graphics pen) {
         @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE && !isGameOver) {
-                dino.jump();
+                player.jump(powerUps.getJumpForce());
             }
             if (e.getKeyCode() == KeyEvent.VK_R && isGameOver) {
                 restartGame();
@@ -128,7 +145,9 @@ protected void paintComponent(Graphics pen) {
         obstacleCreator = new CactusCreator();
         obstacle = obstacleCreator.createObstacle();
         nextIsBird = true;
+        player = dino;          // drop any shield
         dino.reset();
+        powerUps.reset();
         ground.reset();
         isGameOver = false;
         restartButton.setVisible(false);
